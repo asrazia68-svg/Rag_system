@@ -16,15 +16,25 @@ st.set_page_config(page_title="DocuQuery AI", page_icon="📝", layout="wide")
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght=700;800&family=DM+Sans:wght=300;400;500&display=swap');
-html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; background-color: #0b0c16 !important; color: #e8e8f0 !important; }
-.stApp { background: #0b0c16; }
-#MainMenu, footer {visibility: hidden;}
+
+html, body, [data-testid="stAppViewContainer"], [data-testid="stMainBlockContainer"], .stApp { 
+    font-family: 'DM Sans', sans-serif !important; 
+    background-color: #0b0c16 !important; 
+    color: #e8e8f0 !important; 
+}
+
+#MainMenu, footer { visibility: hidden; } /* Yahan bracket band karna zaroori tha */
+
 [data-testid="stSidebar"] { background-color: #0f1123 !important; border-right: 1px solid #1f2347; }
 [data-testid="stChatMessage"] { background: #1c1c27 !important; border: 1px solid #2a2a3d !important; border-radius: 16px !important; padding: 14px 18px !important; margin-bottom: 12px !important; color: #e8e8f0 !important; }
 [data-testid="stChatInputTextArea"] { background: #1c1c27 !important; color: #e8e8f0 !important; }
 .stChatInputContainer { background: #1c1c27 !important; border: 1px solid #2a2a3d !important; border-radius: 14px !important; }
 .stButton > button { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important; color: white !important; border: none !important; border-radius: 10px !important; padding: 10px 24px !important; font-weight: bold !important; width: 100% !important; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3) !important; }
 code { background-color: #1e1b4b !important; color: #a5b4fc !important; border: 1px solid #312e81 !important; padding: 4px 8px !important; border-radius: 6px !important; }
+
+/* Text color force fix */
+[data-testid="stMarkdown"], [data-testid="stChatMessageContent"] p { color: #e8e8f0 !important; }
+
 .online-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; color: #4ade80; font-weight: 500; }
 .dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 6px #4ade80; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
