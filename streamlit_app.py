@@ -1,13 +1,15 @@
 import streamlit as st
+import os
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_text_splitters import RecursiveCharacterTextSplitter  # New Import
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# --- 1. CHANGES: Title, Icon aur Layout ko WIDE kiya taake sidebar fit ho sakay ---
+# --- Page Configuration ---
 st.set_page_config(page_title="DocuQuery AI", page_icon="📝", layout="wide")
 
 st.markdown("""
@@ -22,7 +24,6 @@ html, body, [class*="css"] {
 .stApp { background: #0b0c16; }
 #MainMenu, footer {visibility: hidden;}
 
-/* Sidebar Background Aura Styling */
 [data-testid="stSidebar"] {
     background-color: #0f1123 !important;
     border-right: 1px solid #1f2347;
@@ -55,7 +56,6 @@ html, body, [class*="css"] {
     box-shadow: 0 0 0 3px rgba(124,106,255,0.12) !important;
 }
 
-/* Premium Gradient Button Style */
 .stButton > button {
     background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
     color: white !important;
@@ -72,7 +72,6 @@ html, body, [class*="css"] {
     box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5) !important;
 }
 
-/* Tech Badges Styling */
 code {
     background-color: #1e1b4b !important;
     color: #a5b4fc !important;
@@ -112,7 +111,23 @@ code {
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. CHANGES: Left Sidebar bana kar us mein File Uploader aur Tech Stack shift kiya ---
+# --- Load Models & Database ---
+@st.cache_resource
+def load_rag():
+    embedding_model = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
+    db = Chroma(
+        persist_directory="db/chroma_db",
+        embedding_function=embedding_model,
+        collection_metadata={"hnsw:space": "cosine"}
+    )
+    model = ChatGroq(model="llama-3.3-70b-versatile")
+    return db, model, embedding_model
+
+db, model, embedding_model = load_rag()
+
+# --- Sidebar UI Panel ---
 with st.sidebar:
     st.markdown("""
     <div class="logo-area">
@@ -126,24 +141,37 @@ with st.sidebar:
     st.markdown('<hr class="divider">', unsafe_allow_html=True)
     
     st.markdown("<b style='color: #9ca3af; font-size:0.85rem;'>UPLOAD DOCUMENTS</b>", unsafe_allow_html=True)
-    # File uploader yahan add kiya jo left panel mein show hoga
-    uploaded_file = st.file_uploader("Supports PDF & TXT", type=["pdf", "txt"], label_visibility="collapsed")
+    uploaded_file = st.file_uploader("Supports TXT", type=["txt"], label_visibility="collapsed")
     
+    # NEW FUNCTIONALITY: In-app direct data indexing
     if st.button("⚡ Process & Index Documents"):
         if uploaded_file is not None:
-            st.success("Document added successfully! (Simulated)")
+            with st.spinner("Reading and embedding document into Chroma DB..."):
+                try:
+                    # 1. Raw text read karna file se
+                    raw_text = uploaded_file.read().decode("utf-8")
+                    
+                    # 2. Text Chunks mein split karna
+                    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+                    chunks = text_splitter.split_text(raw_text)
+                    
+                    # 3. Direct Chroma Database mein save karna
+                    db.add_texts(texts=chunks)
+                    
+                    st.success(f"🎉 '{uploaded_file.name}' has been successfully indexed!")
+                    st.balloons()
+                except Exception as e:
+                    st.error(f"Error processing file: {e}")
         else:
             st.warning("Please upload a document first.")
             
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     st.markdown("<b style='color: #6b7280; font-size: 0.8rem;'>TECH STACK</b>", unsafe_allow_html=True)
-    st.markdown("`Pinecone` `Groq LLM` `FastAPI` `LLaMA` `HuggingFace` `Python`")
+    st.markdown("`Chroma DB` `Groq LLM` `FastAPI` `LLaMA 3.3` `HuggingFace` `Python`")
 
-
-# --- 3. Main Content Screen (Center Panel) ---
+# --- Main Content Screen ---
 col1, col2 = st.columns([3, 1])
 with col1:
-    # Top main area text ko up to date kiya
     st.markdown("<h2 style='font-family:\"Syne\", sans-serif; font-weight:800;'>Chat Workspace</h2>", unsafe_allow_html=True)
 with col2:
     st.markdown("""
@@ -154,27 +182,11 @@ with col2:
 
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
 
-@st.cache_resource
-def load_rag():
-    embedding_model = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-    db = Chroma(
-        persist_directory="db/chroma_db",
-        embedding_function=embedding_model,
-        collection_metadata={"hnsw:space": "cosine"}
-    )
-    model = ChatGroq(model="llama-3.3-70b-versatile")
-    return db, model
-
-db, model = load_rag()
-
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# --- 4. CHANGES: Welcome screen text ko premium aur clean design diya ---
 if not st.session_state.messages:
     st.markdown("""
     <div style="text-align:center; padding:60px 20px;">
@@ -185,7 +197,7 @@ if not st.session_state.messages:
             Welcome to DocuQuery AI
         </h1>
         <p style="color:#9ca3af; font-size:1.05rem; line-height:1.6; max-width:600px; margin:0 auto;">
-            Upload your PDF or text documents on the left panel, then ask any question in natural language. 
+            Upload your text documents on the left panel, click Process, then ask any question. 
             I will retrieve the most relevant context and give you precise answers.
         </p>
     </div>
@@ -205,10 +217,14 @@ if prompt := st.chat_input("Ask me anything about your documents..."):
             retriever = db.as_retriever(search_kwargs={"k": 3})
             docs = retriever.invoke(prompt)
 
-            combined_input = f"""Based on the following documents, answer: {prompt}
+            combined_input = f"""Based on the following documents, answer the question clearly.
+            
 Documents:
 {chr(10).join([f"- {doc.page_content}" for doc in docs])}
-If you cant find the answer say: I dont have enough information."""
+
+Question: {prompt}
+
+If you can't find the answer in the documents, say: I dont have enough information."""
 
             messages = [
                 SystemMessage(content="You are a helpful assistant that answers questions based on provided documents."),
@@ -226,7 +242,6 @@ If you cant find the answer say: I dont have enough information."""
 
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
 
-# Clear History button layout settings
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     if st.button("🗑️ Clear History"):
