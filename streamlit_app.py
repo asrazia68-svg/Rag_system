@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-st.set_page_config(page_title="RAG Chat", page_icon="🧠", layout="centered")
+# --- 1. CHANGES: Title, Icon aur Layout ko WIDE kiya taake sidebar fit ho sakay ---
+st.set_page_config(page_title="DocuQuery AI", page_icon="📝", layout="wide")
 
 st.markdown("""
 <style>
@@ -15,11 +16,17 @@ st.markdown("""
 
 html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
-    background-color: #0a0a0f !important;
+    background-color: #0b0c16 !important;
     color: #e8e8f0 !important;
 }
-.stApp { background: #0a0a0f; }
+.stApp { background: #0b0c16; }
 #MainMenu, footer {visibility: hidden;}
+
+/* Sidebar Background Aura Styling */
+[data-testid="stSidebar"] {
+    background-color: #0f1123 !important;
+    border-right: 1px solid #1f2347;
+}
 
 [data-testid="stChatMessage"] {
     background: #1c1c27 !important;
@@ -47,14 +54,33 @@ html, body, [class*="css"] {
     border-color: #7c6aff !important;
     box-shadow: 0 0 0 3px rgba(124,106,255,0.12) !important;
 }
+
+/* Premium Gradient Button Style */
 .stButton > button {
-    background: linear-gradient(135deg, #7c6aff, #ff6a9b) !important;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
     color: white !important;
     border: none !important;
     border-radius: 10px !important;
-    padding: 8px 20px !important;
-    font-weight: 500 !important;
+    padding: 10px 24px !important;
+    font-weight: bold !important;
+    width: 100% !important;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3) !important;
+    transition: all 0.3s ease !important;
 }
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5) !important;
+}
+
+/* Tech Badges Styling */
+code {
+    background-color: #1e1b4b !important;
+    color: #a5b4fc !important;
+    border: 1px solid #312e81 !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+}
+
 .online-badge {
     display: inline-flex; align-items: center; gap: 6px;
     background: rgba(74,222,128,0.1);
@@ -71,35 +97,57 @@ html, body, [class*="css"] {
 .logo-area { display:flex; align-items:center; gap:12px; padding:10px 0 24px 0; }
 .logo-icon {
     width:42px; height:42px;
-    background:linear-gradient(135deg,#7c6aff,#ff6a9b);
+    background:linear-gradient(135deg,#4f46e5,#7c3aed);
     border-radius:12px; display:flex; align-items:center;
     justify-content:center; font-size:20px;
 }
 .logo-title {
-    font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800;
-    background:linear-gradient(135deg,#7c6aff,#ff6a9b);
+    font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800;
+    background:linear-gradient(135deg,#ffffff,#a5b4fc);
     -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:0;
 }
-.logo-sub { font-size:0.72rem; color:#6b6b8a; margin:0; }
+.logo-sub { font-size:0.75rem; color:#6b6b8a; margin:0; }
 .divider { border:none; border-top:1px solid #2a2a3d; margin:8px 0 20px 0; }
 .hint { text-align:center; font-size:0.72rem; color:#6b6b8a; margin-top:8px; }
 </style>
 """, unsafe_allow_html=True)
 
-col1, col2 = st.columns([3, 1])
-with col1:
+# --- 2. CHANGES: Left Sidebar bana kar us mein File Uploader aur Tech Stack shift kiya ---
+with st.sidebar:
     st.markdown("""
     <div class="logo-area">
-        <div class="logo-icon">🧠</div>
+        <div class="logo-icon">📝</div>
         <div>
-            <p class="logo-title">RAG Chat</p>
-            <p class="logo-sub">Document Intelligence</p>
+            <p class="logo-title">DocuQuery AI</p>
+            <p class="logo-sub">Intelligent Document Search</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
+    st.markdown('<hr class="divider">', unsafe_allow_html=True)
+    
+    st.markdown("<b style='color: #9ca3af; font-size:0.85rem;'>UPLOAD DOCUMENTS</b>", unsafe_allow_html=True)
+    # File uploader yahan add kiya jo left panel mein show hoga
+    uploaded_file = st.file_uploader("Supports PDF & TXT", type=["pdf", "txt"], label_visibility="collapsed")
+    
+    if st.button("⚡ Process & Index Documents"):
+        if uploaded_file is not None:
+            st.success("Document added successfully! (Simulated)")
+        else:
+            st.warning("Please upload a document first.")
+            
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("<b style='color: #6b7280; font-size: 0.8rem;'>TECH STACK</b>", unsafe_allow_html=True)
+    st.markdown("`Pinecone` `Groq LLM` `FastAPI` `LLaMA` `HuggingFace` `Python`")
+
+
+# --- 3. Main Content Screen (Center Panel) ---
+col1, col2 = st.columns([3, 1])
+with col1:
+    # Top main area text ko up to date kiya
+    st.markdown("<h2 style='font-family:\"Syne\", sans-serif; font-weight:800;'>Chat Workspace</h2>", unsafe_allow_html=True)
 with col2:
     st.markdown("""
-    <div style="padding-top:18px; text-align:right;">
+    <div style="padding-top:10px; text-align:right;">
         <span class="online-badge"><span class="dot"></span>Online</span>
     </div>
     """, unsafe_allow_html=True)
@@ -126,17 +174,19 @@ if "chat_history" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# --- 4. CHANGES: Welcome screen text ko premium aur clean design diya ---
 if not st.session_state.messages:
     st.markdown("""
-    <div style="text-align:center; padding:40px 20px;">
-        <div style="font-size:3rem; margin-bottom:16px;">✨</div>
-        <h2 style="font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:700;
-            background:linear-gradient(135deg,#7c6aff,#ff6a9b);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
-            Ask Your Documents!
-        </h2>
-        <p style="color:#6b6b8a; font-size:0.9rem; line-height:1.6;">
-            I have read all your documents.<br>Ask me anything — I will answer!
+    <div style="text-align:center; padding:60px 20px;">
+        <div style="font-size:3.5rem; margin-bottom:16px;">✨</div>
+        <h1 style="font-family:'Syne',sans-serif; font-size:2.6rem; font-weight:800;
+            background:linear-gradient(135deg, #ffffff, #a5b4fc);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:15px;">
+            Welcome to DocuQuery AI
+        </h1>
+        <p style="color:#9ca3af; font-size:1.05rem; line-height:1.6; max-width:600px; margin:0 auto;">
+            Upload your PDF or text documents on the left panel, then ask any question in natural language. 
+            I will retrieve the most relevant context and give you precise answers.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -145,7 +195,7 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
-if prompt := st.chat_input("Ask me anything..."):
+if prompt := st.chat_input("Ask me anything about your documents..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.write(prompt)
@@ -176,6 +226,7 @@ If you cant find the answer say: I dont have enough information."""
 
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
 
+# Clear History button layout settings
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     if st.button("🗑️ Clear History"):
@@ -183,4 +234,4 @@ with col2:
         st.session_state.messages = []
         st.rerun()
 
-st.markdown('<p class="hint">Press Enter to send • RAG powered by Groq</p>', unsafe_allow_html=True)
+st.markdown('<p class="hint">Press Enter to send • Powered by DocuQuery AI & Groq</p>', unsafe_allow_html=True)
